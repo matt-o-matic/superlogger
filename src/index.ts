@@ -53,6 +53,19 @@ const cloneDefaultConfig = (): LogConfig => cloneConfig(DEFAULT_LOG_CONFIG);
 
 const escapeForRegex = (value: string): string => value.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&');
 
+const readImportMetaEnv = (): Record<string, unknown> | undefined => {
+  try {
+    const meta = (0, eval)('import.meta') as { env?: Record<string, unknown> } | undefined;
+    if (meta && typeof meta.env === 'object' && meta.env) {
+      return meta.env as Record<string, unknown>;
+    }
+  } catch {
+    // environments without native ESM support will hit this path
+  }
+
+  return undefined;
+};
+
 const getMatcherForPattern = (pattern: string): RegExp => {
   if (!matcherCache.has(pattern)) {
     const escaped = escapeForRegex(pattern).replace(/\\\*/g, '.*');
@@ -86,14 +99,7 @@ const resolveLoggingFeatureFlag = (): boolean => {
     return root.__SUPERLOGGER_ENABLE__;
   }
 
-  const importMetaEnv = (() => {
-    if (typeof import.meta === 'undefined') {
-      return undefined;
-    }
-
-    const meta = import.meta as unknown as { env?: Record<string, unknown> };
-    return typeof meta.env === 'object' ? meta.env : undefined;
-  })();
+  const importMetaEnv = readImportMetaEnv();
 
   const importMetaValue = (importMetaEnv?.VITE_ENABLE_LOGGING ?? importMetaEnv?.ENABLE_LOGGING);
   if (typeof importMetaValue === 'string') {

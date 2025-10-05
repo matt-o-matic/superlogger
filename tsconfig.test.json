@@ -3,8 +3,8 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": ".ts-jest",
-    "module": "ES2020",
-    "moduleResolution": "node",
+    "module": "ESNext",
+    "moduleResolution": "node16",
     "verbatimModuleSyntax": false
   },
   "include": ["src", "__tests__/**/*.ts"]

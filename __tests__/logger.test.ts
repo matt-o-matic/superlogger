@@ -2,6 +2,30 @@ import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals
 
 type MutableGlobal = Record<string, unknown>;
 
+type CallRecord = unknown[];
+
+type ConsoleCapture = {
+  restore: () => void;
+  calls: CallRecord[];
+};
+
+const captureConsole = (method: 'debug' | 'error' | 'warn'): ConsoleCapture => {
+  const original = console[method];
+  const calls: CallRecord[] = [];
+  console[method] = (...args: CallRecord) => {
+    calls.push(args);
+  };
+
+  return {
+    restore: () => {
+      console[method] = original;
+    },
+    get calls() {
+      return calls;
+    }
+  };
+};
+
 const setQueryString = (search: string): void => {
   const normalized = search ? (search.startsWith('?') ? search : `?${search}`) : '';
   (globalThis as MutableGlobal).__SUPERLOGGER_QUERY__ = normalized;
@@ -24,13 +48,12 @@ beforeEach(() => {
 
 afterEach(() => {
   resetGlobals();
-  jest.restoreAllMocks();
 });
 
 describe('superlogger', () => {
   it('emits error logs but skips debug by default', async () => {
-    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
-    const debugSpy = jest.spyOn(console, 'debug').mockImplementation(() => undefined);
+    const errorCapture = captureConsole('error');
+    const debugCapture = captureConsole('debug');
 
     await jest.isolateModulesAsync(async () => {
       const mod = await import('../src/index');
@@ -39,12 +62,15 @@ describe('superlogger', () => {
       log.error('auth:session', 'error message');
     });
 
-    expect(debugSpy).not.toHaveBeenCalled();
-    expect(errorSpy).toHaveBeenCalledTimes(1);
+    errorCapture.restore();
+    debugCapture.restore();
+
+    expect(debugCapture.calls).toHaveLength(0);
+    expect(errorCapture.calls).toHaveLength(1);
   });
 
   it('applies query string overrides when enabled globally', async () => {
-    const debugSpy = jest.spyOn(console, 'debug').mockImplementation(() => undefined);
+    const debugCapture = captureConsole('debug');
 
     await jest.isolateModulesAsync(async () => {
       (globalThis as MutableGlobal).__SUPERLOGGER_ENABLE__ = true;
@@ -54,10 +80,13 @@ describe('superlogger', () => {
       log.debug('checkout:payment', 'debug enabled');
     });
 
-    expect(debugSpy).toHaveBeenCalledTimes(1);
+    debugCapture.restore();
+    expect(debugCapture.calls).toHaveLength(1);
   });
 
   it('tracks context counts even when output is suppressed', async () => {
+    const warnCapture = captureConsole('warn');
+
     await jest.isolateModulesAsync(async () => {
       const mod = await import('../src/index');
       const log = mod.default;
@@ -66,6 +95,8 @@ describe('superlogger', () => {
       const stats = logger.listContext();
       expect(stats['auth:user'].warn).toBe(1);
     });
+
+    warnCapture.restore();
   });
 
   it('resets to default configuration and removes custom patterns', async () => {
