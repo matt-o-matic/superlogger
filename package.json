@@ -1,6 +1,9 @@
 {
-  "name": "superlogger",
-  "version": "0.1.0",
+  "name": "superlogger_dom",
+  "version": "1.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "Browser-first logging utility with scoped levels and runtime overrides.",
   "type": "module",
   "main": "./dist/index.js",

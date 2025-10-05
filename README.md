@@ -1,4 +1,4 @@
-# superlogger
+# superlogger_dom
 
 Browser-first logging utility with scoped levels, runtime overrides, and zero external dependencies.
 
@@ -12,22 +12,22 @@ Browser-first logging utility with scoped levels, runtime overrides, and zero ex
 
 ## Installation
 ```bash
-npm install superlogger
+npm install superlogger_dom
 # or
-pnpm add superlogger
-yarn add superlogger
+pnpm add superlogger_dom
+yarn add superlogger_dom
 ```
 
 ## Usage
 ```ts
-import log from 'superlogger';
+import log from 'superlogger_dom';
 
 log.debug('checkout:cart', 'Cart value', cart);
 log.error('checkout:payment', new Error('Card declined'));
 
 // Attach to window for debugging helpers
 if (typeof window !== 'undefined') {
-  window.superLogger = log;
+  window.superLoggerDom = log;
 }
 ```
 
@@ -35,7 +35,7 @@ if (typeof window !== 'undefined') {
 The logger reads configuration from a global `LogConfig` object where keys are patterns and values are arrays of levels that should be emitted. All patterns are case-insensitive, and `*` matches any scope.
 
 ```ts
-import log, { logger } from 'superlogger';
+import log, { logger } from 'superlogger_dom';
 
 const config = logger.getConfig();
 config['checkout:*'] = ['error', 'fatal'];
@@ -63,7 +63,7 @@ Once enabled, you can append `?loglevel={"pattern":["debug"]}` to the browser UR
 In environments without a real `window.location` (for example, server-side rendering or unit tests), you can set `globalThis.__SUPERLOGGER_QUERY__ = '?loglevel={"pattern":["debug"]}'` before importing the logger to simulate the same override.
 
 ## Query String Override
-When the feature flag is enabled, Superlogger will look for a `loglevel` query parameter on page load. The parameter expects a JSON object where each key is a pattern and the value is an array of levels:
+When the feature flag is enabled, `superlogger_dom` will look for a `loglevel` query parameter on page load. The parameter expects a JSON object where each key is a pattern and the value is an array of levels:
 
 ```
 ?loglevel={"checkout:payment":["debug","notify"]}
