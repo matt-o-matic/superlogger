@@ -1,0 +1,7 @@
+node_modules/
+dist/
+coverage/
+.ts-jest/
+.nyc_output/
+*.log
+.DS_Store

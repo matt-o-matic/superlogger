@@ -1,0 +1,11 @@
+globalThis.__SUPERLOGGER_QUERY__ = '';
+const mod = await import('./dist/index.js');
+const log = mod.default;
+const debug = [];
+const error = [];
+console.debug = (...args) => debug.push(args);
+console.error = (...args) => { error.push(args); };
+log.debug('auth:session', 'debug message');
+log.error('auth:session', 'error message');
+console.log('debug calls', debug.length);
+console.log('error calls', error.length);

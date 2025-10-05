@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": ".ts-jest",
+    "module": "ES2020",
+    "moduleResolution": "node",
+    "verbatimModuleSyntax": false
+  },
+  "include": ["src", "__tests__/**/*.ts"]
+}
